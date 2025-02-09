@@ -1,5 +1,5 @@
+import { createRequire } from 'module';const require = createRequire(import.meta.url);
 import {
-  ApplicationRef,
   Attribute,
   ChangeDetectorRef,
   DEFAULT_CURRENCY_CODE,
@@ -27,13 +27,9 @@ import {
   Renderer2,
   RendererStyleFlags2,
   RuntimeError,
-  Subject,
   TemplateRef,
   Version,
   ViewContainerRef,
-  __async,
-  __spreadProps,
-  __spreadValues,
   booleanAttribute,
   createNgModule,
   findLocaleData,
@@ -46,6 +42,7 @@ import {
   numberAttribute,
   performanceMarkFeature,
   registerLocaleData,
+  require_cjs,
   setClassMetadata,
   stringify,
   untracked,
@@ -61,9 +58,15 @@ import {
   ɵɵinject,
   ɵɵinjectAttribute,
   ɵɵstyleProp
-} from "./chunk-QUW5EQHX.js";
+} from "./chunk-6OI7MHGP.js";
+import {
+  __spreadProps,
+  __spreadValues,
+  __toESM
+} from "./chunk-YHCV7DAQ.js";
 
-// node_modules/@angular/common/fesm2022/common.mjs
+// ../node_modules/@angular/common/fesm2022/common.mjs
+var import_rxjs = __toESM(require_cjs(), 1);
 var _DOM = null;
 function getDOM() {
   return _DOM;
@@ -396,7 +399,7 @@ var HashLocationStrategy = class _HashLocationStrategy extends LocationStrategy 
 })();
 var Location = class _Location {
   /** @internal */
-  _subject = new Subject();
+  _subject = new import_rxjs.Subject();
   /** @internal */
   _basePath;
   /** @internal */
@@ -3704,104 +3707,10 @@ var ViewportScroller = class _ViewportScroller {
     ɵɵdefineInjectable({
       token: _ViewportScroller,
       providedIn: "root",
-      factory: () => false ? new NullViewportScroller() : new BrowserViewportScroller(inject(DOCUMENT), window)
+      factory: () => true ? new NullViewportScroller() : new BrowserViewportScroller(inject(DOCUMENT), window)
     })
   );
 };
-var BrowserViewportScroller = class {
-  document;
-  window;
-  offset = () => [0, 0];
-  constructor(document, window2) {
-    this.document = document;
-    this.window = window2;
-  }
-  /**
-   * Configures the top offset used when scrolling to an anchor.
-   * @param offset A position in screen coordinates (a tuple with x and y values)
-   * or a function that returns the top offset position.
-   *
-   */
-  setOffset(offset) {
-    if (Array.isArray(offset)) {
-      this.offset = () => offset;
-    } else {
-      this.offset = offset;
-    }
-  }
-  /**
-   * Retrieves the current scroll position.
-   * @returns The position in screen coordinates.
-   */
-  getScrollPosition() {
-    return [this.window.scrollX, this.window.scrollY];
-  }
-  /**
-   * Sets the scroll position.
-   * @param position The new position in screen coordinates.
-   */
-  scrollToPosition(position) {
-    this.window.scrollTo(position[0], position[1]);
-  }
-  /**
-   * Scrolls to an element and attempts to focus the element.
-   *
-   * Note that the function name here is misleading in that the target string may be an ID for a
-   * non-anchor element.
-   *
-   * @param target The ID of an element or name of the anchor.
-   *
-   * @see https://html.spec.whatwg.org/#the-indicated-part-of-the-document
-   * @see https://html.spec.whatwg.org/#scroll-to-fragid
-   */
-  scrollToAnchor(target) {
-    const elSelected = findAnchorFromDocument(this.document, target);
-    if (elSelected) {
-      this.scrollToElement(elSelected);
-      elSelected.focus();
-    }
-  }
-  /**
-   * Disables automatic scroll restoration provided by the browser.
-   */
-  setHistoryScrollRestoration(scrollRestoration) {
-    this.window.history.scrollRestoration = scrollRestoration;
-  }
-  /**
-   * Scrolls to an element using the native offset and the specified offset set on this scroller.
-   *
-   * The offset can be used when we know that there is a floating header and scrolling naively to an
-   * element (ex: `scrollIntoView`) leaves the element hidden behind the floating header.
-   */
-  scrollToElement(el) {
-    const rect = el.getBoundingClientRect();
-    const left = rect.left + this.window.pageXOffset;
-    const top = rect.top + this.window.pageYOffset;
-    const offset = this.offset();
-    this.window.scrollTo(left - offset[0], top - offset[1]);
-  }
-};
-function findAnchorFromDocument(document, target) {
-  const documentResult = document.getElementById(target) || document.getElementsByName(target)[0];
-  if (documentResult) {
-    return documentResult;
-  }
-  if (typeof document.createTreeWalker === "function" && document.body && typeof document.body.attachShadow === "function") {
-    const treeWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
-    let currentNode = treeWalker.currentNode;
-    while (currentNode) {
-      const shadowRoot = currentNode.shadowRoot;
-      if (shadowRoot) {
-        const result = shadowRoot.getElementById(target) || shadowRoot.querySelector(`[name="${target}"]`);
-        if (result) {
-          return result;
-        }
-      }
-      currentNode = treeWalker.nextNode();
-    }
-  }
-  return null;
-}
 var NullViewportScroller = class {
   /**
    * Empty implementation
@@ -4165,7 +4074,7 @@ var PreconnectLinkChecker = class _PreconnectLinkChecker {
    * @param originalNgSrc ngSrc value
    */
   assertPreconnect(rewrittenSrc, originalNgSrc) {
-    if (false) return;
+    if (true) return;
     const imgUrl = getUrl(rewrittenSrc, this.window);
     if (this.blocklist.has(imgUrl.hostname) || this.alreadySeen.has(imgUrl.origin)) return;
     this.alreadySeen.add(imgUrl.origin);
@@ -4287,12 +4196,9 @@ var OVERSIZED_IMAGE_TOLERANCE = 1e3;
 var FIXED_SRCSET_WIDTH_LIMIT = 1920;
 var FIXED_SRCSET_HEIGHT_LIMIT = 1080;
 var PLACEHOLDER_BLUR_AMOUNT = 15;
-var PLACEHOLDER_DIMENSION_LIMIT = 1e3;
 var DATA_URL_WARN_LIMIT = 4e3;
 var DATA_URL_ERROR_LIMIT = 1e4;
 var BUILT_IN_LOADERS = [imgixLoaderInfo, imageKitLoaderInfo, cloudinaryLoaderInfo, netlifyLoaderInfo];
-var PRIORITY_COUNT_THRESHOLD = 10;
-var IMGS_WITH_PRIORITY_ATTR_COUNT = 0;
 var NgOptimizedImage = class _NgOptimizedImage {
   imageLoader = inject(IMAGE_LOADER);
   config = processConfig(inject(IMAGE_CONFIG));
@@ -4442,7 +4348,7 @@ var NgOptimizedImage = class _NgOptimizedImage {
       if (this.priority) {
         const checker = this.injector.get(PreconnectLinkChecker);
         checker.assertPreconnect(this.getRewrittenSrc(), this.ngSrc);
-        if (true) {
+        if (false) {
           const applicationRef = this.injector.get(ApplicationRef);
           assetPriorityCountBelowThreshold(applicationRef);
         }
@@ -4475,7 +4381,7 @@ var NgOptimizedImage = class _NgOptimizedImage {
         this.setHostAttribute("sizes", "auto, 100vw");
       }
     }
-    if (false) {
+    if (this.priority) {
       const preloadLinkCreator = this.injector.get(PreloadLinkCreator);
       preloadLinkCreator.createPreloadLinkTag(this.renderer, this.getRewrittenSrc(), rewrittenSrcset, this.sizes);
     }
@@ -4498,7 +4404,7 @@ var NgOptimizedImage = class _NgOptimizedImage {
         }
       }
     }
-    if (ngDevMode && changes["placeholder"]?.currentValue && true && true) {
+    if (ngDevMode && changes["placeholder"]?.currentValue && true && false) {
       assertPlaceholderDimensions(this, this.imgElement);
     }
   }
@@ -4989,27 +4895,6 @@ function assertNoLoaderParamsWithoutLoader(dir, imageLoader) {
     console.warn(formatRuntimeError(2963, `${imgDirectiveDetails(dir.ngSrc)} the \`loaderParams\` attribute is present but no image loader is configured (i.e. the default one is being used), which means that the loaderParams data will not be consumed and will not affect the URL. To fix this, provide a custom loader or remove the \`loaderParams\` attribute from the image.`));
   }
 }
-function assetPriorityCountBelowThreshold(appRef) {
-  return __async(this, null, function* () {
-    if (IMGS_WITH_PRIORITY_ATTR_COUNT === 0) {
-      IMGS_WITH_PRIORITY_ATTR_COUNT++;
-      yield appRef.whenStable();
-      if (IMGS_WITH_PRIORITY_ATTR_COUNT > PRIORITY_COUNT_THRESHOLD) {
-        console.warn(formatRuntimeError(2966, `NgOptimizedImage: The "priority" attribute is set to true more than ${PRIORITY_COUNT_THRESHOLD} times (${IMGS_WITH_PRIORITY_ATTR_COUNT} times). Marking too many images as "high" priority can hurt your application's LCP (https://web.dev/lcp). "Priority" should only be set on the image expected to be the page's LCP element.`));
-      }
-    } else {
-      IMGS_WITH_PRIORITY_ATTR_COUNT++;
-    }
-  });
-}
-function assertPlaceholderDimensions(dir, imgElement) {
-  const computedStyle = window.getComputedStyle(imgElement);
-  let renderedWidth = parseFloat(computedStyle.getPropertyValue("width"));
-  let renderedHeight = parseFloat(computedStyle.getPropertyValue("height"));
-  if (renderedWidth > PLACEHOLDER_DIMENSION_LIMIT || renderedHeight > PLACEHOLDER_DIMENSION_LIMIT) {
-    console.warn(formatRuntimeError(2967, `${imgDirectiveDetails(dir.ngSrc)} it uses a placeholder image, but at least one of the dimensions attribute (height or width) exceeds the limit of ${PLACEHOLDER_DIMENSION_LIMIT}px. To fix this, use a smaller image as a placeholder.`));
-  }
-}
 function callOnLoadIfImageIsLoaded(img, callback) {
   if (img.complete && img.naturalWidth) {
     callback();
@@ -5137,4 +5022,4 @@ export {
    * License: MIT
    *)
 */
-//# sourceMappingURL=chunk-KSXU6XDB.js.map
+//# sourceMappingURL=chunk-N5SP5V3Y.js.map
