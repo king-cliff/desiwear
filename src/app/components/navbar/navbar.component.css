@@ -1,0 +1,6 @@
+.navbar {
+    background: url('/assets/img/flag-of-pakistan.jpg') no-repeat center center;
+    background-size: cover;
+    padding: 10px 0;
+    position: relative;
+  }
