@@ -6,10 +6,10 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 import type { Connect, ViteDevServer } from 'vite';
-import { AngularMemoryOutputFiles } from '../utils';
+import { AngularMemoryOutputFiles, AngularOutputAssets } from '../utils';
 export interface ComponentStyleRecord {
     rawContent: Uint8Array;
     used?: Set<string>;
     reload?: boolean;
 }
-export declare function createAngularAssetsMiddleware(server: ViteDevServer, assets: Map<string, string>, outputFiles: AngularMemoryOutputFiles, componentStyles: Map<string, ComponentStyleRecord>, encapsulateStyle: (style: Uint8Array, componentId: string) => string): Connect.NextHandleFunction;
+export declare function createAngularAssetsMiddleware(server: ViteDevServer, assets: AngularOutputAssets, outputFiles: AngularMemoryOutputFiles, componentStyles: Map<string, ComponentStyleRecord>, encapsulateStyle: (style: Uint8Array, componentId: string) => string): Connect.NextHandleFunction;

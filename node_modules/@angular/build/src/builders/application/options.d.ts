@@ -75,6 +75,11 @@ interface InternalOptions {
      */
     templateUpdates?: boolean;
     /**
+     * Enables emitting incremental build results when in watch mode. A full build result will only be emitted
+     * for the initial build. This option also requires watch to be enabled to have an effect.
+     */
+    incrementalResults?: boolean;
+    /**
      * Enables instrumentation to collect code coverage data for specific files.
      *
      * Used exclusively for tests and shouldn't be used for other kinds of builds.
@@ -193,6 +198,7 @@ export declare function normalizeOptions(context: BuilderContext, projectName: s
     instrumentForCoverage: ((filename: string) => boolean) | undefined;
     security: import("./schema").Security | undefined;
     templateUpdates: boolean;
+    incrementalResults: boolean;
 }>;
 export declare function getLocaleBaseHref(baseHref: string | undefined, i18n: NormalizedApplicationBuildOptions['i18nOptions'], locale: string): string | undefined;
 export {};

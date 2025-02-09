@@ -1,6 +1,6 @@
 {
   "name": "beasties",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Inline critical CSS and lazy-load the rest.",
   "author": "The Chromium Authors",
   "contributors": [
@@ -41,14 +41,17 @@
   "files": [
     "dist"
   ],
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "dependencies": {
     "css-select": "^5.1.0",
     "css-what": "^6.1.0",
     "dom-serializer": "^2.0.0",
     "domhandler": "^5.0.3",
-    "htmlparser2": "^9.0.0",
+    "htmlparser2": "^9.1.0",
     "picocolors": "^1.1.1",
-    "postcss": "^8.4.47",
+    "postcss": "^8.4.49",
     "postcss-media-query-parser": "^0.2.3"
   },
   "devDependencies": {
@@ -57,8 +60,8 @@
     "unbuild": "2.0.0"
   },
   "scripts": {
-    "build": "unbuild && cp src/index.d.ts dist/index.d.ts",
-    "build:stub": "unbuild --stub && cp src/index.d.ts dist/index.d.ts",
+    "build": "unbuild && node -e \"require('fs/promises').cp('src/index.d.ts', 'dist/index.d.ts')\"",
+    "build:stub": "unbuild --stub && node -e \"require('fs/promises').cp('src/index.d.ts', 'dist/index.d.ts')\"",
     "docs": "documentation readme src -q --no-markdown-toc -a public -s Usage --sort-order alpha"
   }
 }

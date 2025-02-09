@@ -10,6 +10,7 @@ import { AngularMemoryOutputFiles } from '../utils';
 interface AngularMemoryPluginOptions {
     virtualProjectRoot: string;
     outputFiles: AngularMemoryOutputFiles;
+    templateUpdates?: ReadonlyMap<string, string>;
     external?: string[];
     skipViteClient?: boolean;
 }

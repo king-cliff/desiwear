@@ -63,7 +63,7 @@ async function normalizeOptions(context, projectName, options, extensions) {
     // Gather persistent caching option and provide a project specific cache location
     const cacheOptions = (0, normalize_cache_1.normalizeCacheOptions)(projectMetadata, workspaceRoot);
     cacheOptions.path = node_path_1.default.join(cacheOptions.path, projectName);
-    const i18nOptions = (0, i18n_options_1.createI18nOptions)(projectMetadata, options.localize);
+    const i18nOptions = (0, i18n_options_1.createI18nOptions)(projectMetadata, options.localize, context.logger, !!options.ssr);
     i18nOptions.duplicateTranslationBehavior = options.i18nDuplicateTranslation;
     i18nOptions.missingTranslationBehavior = options.i18nMissingTranslation;
     if (options.forceI18nFlatOutput) {
@@ -298,6 +298,7 @@ async function normalizeOptions(context, projectName, options, extensions) {
         instrumentForCoverage,
         security,
         templateUpdates: !!options.templateUpdates,
+        incrementalResults: !!options.incrementalResults,
     };
 }
 async function getTailwindConfig(searchDirectories, workspaceRoot, context) {
@@ -427,12 +428,14 @@ function normalizeGlobalEntries(rawEntries, defaultName) {
     }
     return [...bundles.values()];
 }
-function getLocaleBaseHref(baseHref, i18n, locale) {
+function getLocaleBaseHref(baseHref = '', i18n, locale) {
     if (i18n.flatOutput) {
         return undefined;
     }
-    if (i18n.locales[locale] && i18n.locales[locale].baseHref !== '') {
-        return (0, url_1.urlJoin)(baseHref || '', i18n.locales[locale].baseHref ?? `/${locale}/`);
+    const localeData = i18n.locales[locale];
+    if (!localeData) {
+        return undefined;
     }
-    return undefined;
+    const baseHrefSuffix = localeData.baseHref ?? localeData.subPath + '/';
+    return baseHrefSuffix !== '' ? (0, url_1.urlJoin)(baseHref, baseHrefSuffix) : undefined;
 }

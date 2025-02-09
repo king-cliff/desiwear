@@ -24,6 +24,7 @@ const options_1 = require("./options");
 const schema_1 = require("./schema");
 /**
  * Run additional builds steps including SSG, AppShell, Index HTML file and Service worker generation.
+ * @param metafile An esbuild metafile object.
  * @param options The normalized application builder options used to create the build.
  * @param outputFiles The output files of an executed build.
  * @param assetFiles The assets of an executed build.
@@ -31,13 +32,13 @@ const schema_1 = require("./schema");
  * @param locale A language locale to insert in the index.html.
  */
 // eslint-disable-next-line max-lines-per-function
-async function executePostBundleSteps(options, outputFiles, assetFiles, initialFiles, locale) {
+async function executePostBundleSteps(metafile, options, outputFiles, assetFiles, initialFiles, locale) {
     const additionalAssets = [];
     const additionalOutputFiles = [];
     const allErrors = [];
     const allWarnings = [];
     const prerenderedRoutes = {};
-    const { baseHref = '/', serviceWorker, i18nOptions, indexHtmlOptions, optimizationOptions, sourcemapOptions, outputMode, serverEntryPoint, prerenderOptions, appShellOptions, workspaceRoot, partialSSRBuild, } = options;
+    const { baseHref = '/', serviceWorker, ssrOptions, indexHtmlOptions, optimizationOptions, sourcemapOptions, outputMode, serverEntryPoint, prerenderOptions, appShellOptions, publicPath, workspaceRoot, partialSSRBuild, } = options;
     // Index HTML content without CSS inlining to be used for server rendering (AppShell, SSG and SSR).
     // NOTE: Critical CSS inlining is deliberately omitted here, as it will be handled during server rendering.
     // Additionally, when using prerendering or AppShell, the index HTML file may be regenerated.
@@ -55,8 +56,9 @@ async function executePostBundleSteps(options, outputFiles, assetFiles, initialF
         }
     }
     // Create server manifest
-    if (serverEntryPoint) {
-        const { manifestContent, serverAssetsChunks } = (0, manifest_1.generateAngularServerAppManifest)(additionalHtmlOutputFiles, outputFiles, optimizationOptions.styles.inlineCritical ?? false, undefined, locale, baseHref);
+    const initialFilesPaths = new Set(initialFiles.keys());
+    if (serverEntryPoint && (outputMode || prerenderOptions || appShellOptions || ssrOptions)) {
+        const { manifestContent, serverAssetsChunks } = (0, manifest_1.generateAngularServerAppManifest)(additionalHtmlOutputFiles, outputFiles, optimizationOptions.styles.inlineCritical ?? false, undefined, locale, baseHref, initialFilesPaths, metafile, publicPath);
         additionalOutputFiles.push(...serverAssetsChunks, (0, utils_1.createOutputFile)(manifest_1.SERVER_APP_MANIFEST_FILENAME, manifestContent, bundler_context_1.BuildOutputFileType.ServerApplication));
     }
     // Pre-render (SSG) and App-shell
@@ -95,7 +97,7 @@ async function executePostBundleSteps(options, outputFiles, assetFiles, initialF
             // Regenerate the manifest to append route tree. This is only needed if SSR is enabled.
             const manifest = additionalOutputFiles.find((f) => f.path === manifest_1.SERVER_APP_MANIFEST_FILENAME);
             (0, node_assert_1.default)(manifest, `${manifest_1.SERVER_APP_MANIFEST_FILENAME} was not found in output files.`);
-            const { manifestContent, serverAssetsChunks } = (0, manifest_1.generateAngularServerAppManifest)(additionalHtmlOutputFiles, outputFiles, optimizationOptions.styles.inlineCritical ?? false, serializableRouteTreeNodeForManifest, locale, baseHref);
+            const { manifestContent, serverAssetsChunks } = (0, manifest_1.generateAngularServerAppManifest)(additionalHtmlOutputFiles, outputFiles, optimizationOptions.styles.inlineCritical ?? false, serializableRouteTreeNodeForManifest, locale, baseHref, initialFilesPaths, metafile, publicPath);
             for (const chunk of serverAssetsChunks) {
                 const idx = additionalOutputFiles.findIndex(({ path }) => path === chunk.path);
                 if (idx === -1) {

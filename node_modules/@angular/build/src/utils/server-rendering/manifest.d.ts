@@ -5,6 +5,7 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.dev/license
  */
+import type { Metafile } from 'esbuild';
 import { NormalizedApplicationBuildOptions } from '../../builders/application/options';
 import { type BuildOutputFile } from '../../tools/esbuild/bundler-context';
 export declare const SERVER_APP_MANIFEST_FILENAME = "angular-app-manifest.mjs";
@@ -42,12 +43,15 @@ export declare function generateAngularServerAppEngineManifest(i18nOptions: Norm
  * the application, helping with localization and rendering content specific to the locale.
  * @param baseHref - The base HREF for the application. This is used to set the base URL
  * for all relative URLs in the application.
+ * @param initialFiles - A list of initial files that preload tags have already been added for.
+ * @param metafile - An esbuild metafile object.
+ * @param publicPath - The configured public path.
  *
  * @returns An object containing:
  * - `manifestContent`: A string of the SSR manifest content.
  * - `serverAssetsChunks`: An array of build output files containing the generated assets for the server.
  */
-export declare function generateAngularServerAppManifest(additionalHtmlOutputFiles: Map<string, BuildOutputFile>, outputFiles: BuildOutputFile[], inlineCriticalCss: boolean, routes: readonly unknown[] | undefined, locale: string | undefined, baseHref: string): {
+export declare function generateAngularServerAppManifest(additionalHtmlOutputFiles: Map<string, BuildOutputFile>, outputFiles: BuildOutputFile[], inlineCriticalCss: boolean, routes: readonly unknown[] | undefined, locale: string | undefined, baseHref: string, initialFiles: Set<string>, metafile: Metafile, publicPath: string | undefined): {
     manifestContent: string;
     serverAssetsChunks: BuildOutputFile[];
 };

@@ -71,7 +71,6 @@ module.exports = {
 +    new Beasties({
 +      // optional configuration
 +      preload: 'swap',
-+      includeSelectors: [/^\.btn/, '.banner'],
 +    })
   ]
 }
@@ -116,7 +115,6 @@ All optional. Pass them to `new Beasties({ ... })`.
 - `compress` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Compress resulting critical CSS _(default: `true`)_
 - `logLevel` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Controls [log level](#loglevel) of the plugin _(default: `"info"`)_
 - `logger` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Provide a custom logger interface [logger](#logger)
-- `includeSelectors` **[RegExp](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp)** | **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Provide a list of selectors that should be included in the critical CSS. Accepts both RegExp and string.
 
 ### Include/exclude rules
 

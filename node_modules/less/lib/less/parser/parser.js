@@ -43,7 +43,7 @@ var atrule_syntax_1 = require("../tree/atrule-syntax");
 var Parser = function Parser(context, imports, fileInfo, currentIndex) {
     currentIndex = currentIndex || 0;
     var parsers;
-    var parserInput = parser_input_1.default();
+    var parserInput = (0, parser_input_1.default)();
     function error(msg, type) {
         throw new less_error_1.default({
             index: parserInput.i,
@@ -59,7 +59,7 @@ var Parser = function Parser(context, imports, fileInfo, currentIndex) {
             return result;
         }
         error(msg || (typeof arg === 'string'
-            ? "expected '" + arg + "' got '" + parserInput.currentChar() + "'"
+            ? "expected '".concat(arg, "' got '").concat(parserInput.currentChar(), "'")
             : 'unexpected token'));
     }
     // Specialization of expect()
@@ -67,7 +67,7 @@ var Parser = function Parser(context, imports, fileInfo, currentIndex) {
         if (parserInput.$char(arg)) {
             return arg;
         }
-        error(msg || "expected '" + arg + "' got '" + parserInput.currentChar() + "'");
+        error(msg || "expected '".concat(arg, "' got '").concat(parserInput.currentChar(), "'"));
     }
     function getDebugInfo(index) {
         var filename = fileInfo.filename;
@@ -144,8 +144,8 @@ var Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
                 };
             }
-            globalVars = (additionalData && additionalData.globalVars) ? Parser.serializeVars(additionalData.globalVars) + "\n" : '';
-            modifyVars = (additionalData && additionalData.modifyVars) ? "\n" + Parser.serializeVars(additionalData.modifyVars) : '';
+            globalVars = (additionalData && additionalData.globalVars) ? "".concat(Parser.serializeVars(additionalData.globalVars), "\n") : '';
+            modifyVars = (additionalData && additionalData.modifyVars) ? "\n".concat(Parser.serializeVars(additionalData.modifyVars)) : '';
             if (context.pluginManager) {
                 var preProcessors = context.pluginManager.getPreProcessors();
                 for (var i = 0; i < preProcessors.length; i++) {
@@ -411,6 +411,32 @@ var Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     parserInput.forget();
                     return new (tree_1.default.Call)(name, args, index + currentIndex, fileInfo);
                 },
+                declarationCall: function () {
+                    var validCall;
+                    var args;
+                    var index = parserInput.i;
+                    parserInput.save();
+                    validCall = parserInput.$re(/^[\w]+\(/);
+                    if (!validCall) {
+                        parserInput.forget();
+                        return;
+                    }
+                    validCall = validCall.substring(0, validCall.length - 1);
+                    var rule = this.ruleProperty();
+                    var value;
+                    if (rule) {
+                        value = this.value();
+                    }
+                    if (rule && value) {
+                        args = [new (tree_1.default.Declaration)(rule, value, null, null, parserInput.i + currentIndex, fileInfo, true)];
+                    }
+                    if (!parserInput.$char(')')) {
+                        parserInput.restore('Could not parse call arguments or missing \')\'');
+                        return;
+                    }
+                    parserInput.forget();
+                    return new (tree_1.default.Call)(validCall, args, index + currentIndex, fileInfo);
+                },
                 //
                 // Parsing rules for functions with non-standard args, e.g.:
                 //
@@ -563,7 +589,7 @@ var Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     var curly;
                     var index = parserInput.i;
                     if (parserInput.currentChar() === '@' && (curly = parserInput.$re(/^@\{([\w-]+)\}/))) {
-                        return new (tree_1.default.Variable)("@" + curly[1], index + currentIndex, fileInfo);
+                        return new (tree_1.default.Variable)("@".concat(curly[1]), index + currentIndex, fileInfo);
                     }
                 },
                 //
@@ -583,7 +609,7 @@ var Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     var curly;
                     var index = parserInput.i;
                     if (parserInput.currentChar() === '$' && (curly = parserInput.$re(/^\$\{([\w-]+)\}/))) {
-                        return new (tree_1.default.Property)("$" + curly[1], index + currentIndex, fileInfo);
+                        return new (tree_1.default.Property)("$".concat(curly[1]), index + currentIndex, fileInfo);
                     }
                 },
                 //
@@ -1114,10 +1140,10 @@ var Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 value = parserInput.$re(/^\d+/);
                 if (!value) {
                     value = expect(parsers.entities.variable, 'Could not parse alpha');
-                    value = "@{" + value.name.slice(1) + "}";
+                    value = "@{".concat(value.name.slice(1), "}");
                 }
                 expectChar(')');
-                return new tree_1.default.Quoted('', "alpha(opacity=" + value + ")");
+                return new tree_1.default.Quoted('', "alpha(opacity=".concat(value, ")"));
             },
             //
             // A Selector Element
@@ -1495,6 +1521,10 @@ var Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     if (e) {
                         value.push(e);
                     }
+                    if (parserInput.peek(',')) {
+                        value.push(new (tree_1.default.Anonymous)(',', parserInput.i));
+                        parserInput.$char(',');
+                    }
                 } while (e);
                 done = testCurrentChar();
                 if (value.length > 0) {
@@ -1514,7 +1544,7 @@ var Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 value = parserInput.$parseUntil(tok);
                 if (value) {
                     if (typeof value === 'string') {
-                        error("Expected '" + value + "'", 'Parse');
+                        error("Expected '".concat(value, "'"), 'Parse');
                     }
                     if (value.length === 1 && value[0] === ' ') {
                         parserInput.forget();
@@ -1622,7 +1652,7 @@ var Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 var rangeP;
                 parserInput.save();
                 do {
-                    e = entities.keyword() || entities.variable() || entities.mixinLookup();
+                    e = entities.declarationCall.bind(this)() || entities.keyword() || entities.variable() || entities.mixinLookup();
                     if (e) {
                         nodes.push(e);
                     }
@@ -1803,7 +1833,7 @@ var Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 }
                 nonVendorSpecificName = name;
                 if (name.charAt(1) == '-' && name.indexOf('-', 2) > 0) {
-                    nonVendorSpecificName = "@" + name.slice(name.indexOf('-', 2) + 1);
+                    nonVendorSpecificName = "@".concat(name.slice(name.indexOf('-', 2) + 1));
                 }
                 switch (nonVendorSpecificName) {
                     case '@charset':
@@ -1831,13 +1861,13 @@ var Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 if (hasIdentifier) {
                     value = this.entity();
                     if (!value) {
-                        error("expected " + name + " identifier");
+                        error("expected ".concat(name, " identifier"));
                     }
                 }
                 else if (hasExpression) {
                     value = this.expression();
                     if (!value) {
-                        error("expected " + name + " expression");
+                        error("expected ".concat(name, " expression"));
                     }
                 }
                 else if (hasUnknown) {
@@ -1845,7 +1875,7 @@ var Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     hasBlock = (parserInput.currentChar() === '{');
                     if (!value) {
                         if (!hasBlock && parserInput.currentChar() !== ';') {
-                            error(name + " rule is missing block or ending semi-colon");
+                            error("".concat(name, " rule is missing block or ending semi-colon"));
                         }
                     }
                     else if (!value.value) {
@@ -2083,7 +2113,7 @@ var Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     return;
                 }
                 if (!parserInput.$char(')')) {
-                    parserInput.restore("expected ')' got '" + parserInput.currentChar() + "'");
+                    parserInput.restore("expected ')' got '".concat(parserInput.currentChar(), "'"));
                     return;
                 }
                 parserInput.forget();
@@ -2251,8 +2281,8 @@ var Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         name[k] = (s.charAt(0) !== '@' && s.charAt(0) !== '$') ?
                             new (tree_1.default.Keyword)(s) :
                             (s.charAt(0) === '@' ?
-                                new (tree_1.default.Variable)("@" + s.slice(2, -1), index[k] + currentIndex, fileInfo) :
-                                new (tree_1.default.Property)("$" + s.slice(2, -1), index[k] + currentIndex, fileInfo));
+                                new (tree_1.default.Variable)("@".concat(s.slice(2, -1)), index[k] + currentIndex, fileInfo) :
+                                new (tree_1.default.Property)("$".concat(s.slice(2, -1)), index[k] + currentIndex, fileInfo));
                     }
                     return name;
                 }
@@ -2266,7 +2296,7 @@ Parser.serializeVars = function (vars) {
     for (var name_1 in vars) {
         if (Object.hasOwnProperty.call(vars, name_1)) {
             var value = vars[name_1];
-            s += ((name_1[0] === '@') ? '' : '@') + name_1 + ": " + value + ((String(value).slice(-1) === ';') ? '' : ';');
+            s += "".concat(((name_1[0] === '@') ? '' : '@') + name_1, ": ").concat(value).concat((String(value).slice(-1) === ';') ? '' : ';');
         }
     }
     return s;

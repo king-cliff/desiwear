@@ -22,10 +22,12 @@ const angular_compilation_1 = require("./angular-compilation");
  */
 class ParallelCompilation extends angular_compilation_1.AngularCompilation {
     jit;
+    browserOnlyBuild;
     #worker;
-    constructor(jit) {
+    constructor(jit, browserOnlyBuild) {
         super();
         this.jit = jit;
+        this.browserOnlyBuild = browserOnlyBuild;
         // TODO: Convert to import.meta usage during ESM transition
         const localRequire = (0, node_module_1.createRequire)(__filename);
         this.#worker = new worker_pool_1.WorkerPool({
@@ -82,6 +84,7 @@ class ParallelCompilation extends angular_compilation_1.AngularCompilation {
             fileReplacements: hostOptions.fileReplacements,
             tsconfig,
             jit: this.jit,
+            browserOnlyBuild: this.browserOnlyBuild,
             stylesheetPort: stylesheetChannel.port2,
             optionsPort: optionsChannel.port2,
             optionsSignal,

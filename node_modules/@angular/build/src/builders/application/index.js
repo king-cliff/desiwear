@@ -96,6 +96,7 @@ context, extensions) {
         clearScreen: normalizedOptions.clearScreen,
         colors: normalizedOptions.colors,
         jsonLogs: normalizedOptions.jsonLogs,
+        incrementalResults: normalizedOptions.incrementalResults,
         logger,
         signal,
     });
@@ -116,7 +117,8 @@ context, extensions) {
  */
 async function* buildApplication(options, context, extensions) {
     let initial = true;
-    for await (const result of buildApplicationInternal(options, context, extensions)) {
+    const internalOptions = { ...options, incrementalResults: true };
+    for await (const result of buildApplicationInternal(internalOptions, context, extensions)) {
         const outputOptions = result.detail?.['outputOptions'];
         if (initial) {
             initial = false;
@@ -134,7 +136,7 @@ async function* buildApplication(options, context, extensions) {
             continue;
         }
         (0, node_assert_1.default)(outputOptions, 'Application output options are required for builder usage.');
-        (0, node_assert_1.default)(result.kind === results_1.ResultKind.Full, 'Application build did not provide a full output.');
+        (0, node_assert_1.default)(result.kind === results_1.ResultKind.Full || result.kind === results_1.ResultKind.Incremental, 'Application build did not provide a file result output.');
         // TODO: Restructure output logging to better handle stdout JSON piping
         if (!environment_options_1.useJSONBuildLogs) {
             context.logger.info(`Output location: ${outputOptions.base}\n`);
@@ -147,24 +149,7 @@ async function* buildApplication(options, context, extensions) {
                     file.type === bundler_context_1.BuildOutputFileType.ServerRoot)) {
                 return;
             }
-            let typeDirectory;
-            switch (file.type) {
-                case bundler_context_1.BuildOutputFileType.Browser:
-                case bundler_context_1.BuildOutputFileType.Media:
-                    typeDirectory = outputOptions.browser;
-                    break;
-                case bundler_context_1.BuildOutputFileType.ServerApplication:
-                case bundler_context_1.BuildOutputFileType.ServerRoot:
-                    typeDirectory = outputOptions.server;
-                    break;
-                case bundler_context_1.BuildOutputFileType.Root:
-                    typeDirectory = '';
-                    break;
-                default:
-                    throw new Error(`Unhandled write for file "${filePath}" with type "${bundler_context_1.BuildOutputFileType[file.type]}".`);
-            }
-            // NOTE: 'base' is a fully resolved path at this point
-            const fullFilePath = node_path_1.default.join(outputOptions.base, typeDirectory, filePath);
+            const fullFilePath = generateFullPath(filePath, file.type, outputOptions);
             // Ensure output subdirectories exist
             const fileBasePath = node_path_1.default.dirname(fullFilePath);
             if (fileBasePath && !directoryExists.has(fileBasePath)) {
@@ -180,7 +165,36 @@ async function* buildApplication(options, context, extensions) {
                 await promises_1.default.copyFile(file.inputPath, fullFilePath, promises_1.default.constants.COPYFILE_FICLONE);
             }
         });
+        // Delete any removed files if incremental
+        if (result.kind === results_1.ResultKind.Incremental && result.removed?.length) {
+            await Promise.all(result.removed.map((file) => {
+                const fullFilePath = generateFullPath(file.path, file.type, outputOptions);
+                return promises_1.default.rm(fullFilePath, { force: true, maxRetries: 3 });
+            }));
+        }
         yield { success: true };
     }
 }
-exports.default = (0, architect_1.createBuilder)(buildApplication);
+function generateFullPath(filePath, type, outputOptions) {
+    let typeDirectory;
+    switch (type) {
+        case bundler_context_1.BuildOutputFileType.Browser:
+        case bundler_context_1.BuildOutputFileType.Media:
+            typeDirectory = outputOptions.browser;
+            break;
+        case bundler_context_1.BuildOutputFileType.ServerApplication:
+        case bundler_context_1.BuildOutputFileType.ServerRoot:
+            typeDirectory = outputOptions.server;
+            break;
+        case bundler_context_1.BuildOutputFileType.Root:
+            typeDirectory = '';
+            break;
+        default:
+            throw new Error(`Unhandled write for file "${filePath}" with type "${bundler_context_1.BuildOutputFileType[type]}".`);
+    }
+    // NOTE: 'base' is a fully resolved path at this point
+    const fullFilePath = node_path_1.default.join(outputOptions.base, typeDirectory, filePath);
+    return fullFilePath;
+}
+const builder = (0, architect_1.createBuilder)(buildApplication);
+exports.default = builder;

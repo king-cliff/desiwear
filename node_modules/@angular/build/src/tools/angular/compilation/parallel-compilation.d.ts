@@ -20,8 +20,9 @@ import { AngularCompilation, DiagnosticModes, EmitFileResult } from './angular-c
  */
 export declare class ParallelCompilation extends AngularCompilation {
     #private;
-    readonly jit: boolean;
-    constructor(jit: boolean);
+    private readonly jit;
+    private readonly browserOnlyBuild;
+    constructor(jit: boolean, browserOnlyBuild: boolean);
     initialize(tsconfig: string, hostOptions: AngularHostOptions, compilerOptionsTransformer?: (compilerOptions: CompilerOptions) => CompilerOptions): Promise<{
         affectedFiles: ReadonlySet<SourceFile>;
         compilerOptions: CompilerOptions;

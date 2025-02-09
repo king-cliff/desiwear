@@ -15,6 +15,7 @@ export interface LocaleDescription {
     translation?: Record<string, unknown>;
     dataPath?: string;
     baseHref?: string;
+    subPath: string;
 }
 export interface I18nOptions {
     inlineLocales: Set<string>;
@@ -26,7 +27,9 @@ export interface I18nOptions {
 }
 export declare function createI18nOptions(projectMetadata: {
     i18n?: unknown;
-}, inline?: boolean | string[]): I18nOptions;
+}, inline?: boolean | string[], logger?: {
+    warn(message: string): void;
+}, ssrEnabled?: boolean): I18nOptions;
 export declare function loadTranslations(locale: string, desc: LocaleDescription, workspaceRoot: string, loader: TranslationLoader, logger: {
     warn: (message: string) => void;
     error: (message: string) => void;

@@ -10,7 +10,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createAngularIndexHtmlMiddleware = createAngularIndexHtmlMiddleware;
 const node_path_1 = require("node:path");
 const utils_1 = require("../utils");
-function createAngularIndexHtmlMiddleware(server, outputFiles, indexHtmlTransformer) {
+function createAngularIndexHtmlMiddleware(server, outputFiles, resetComponentUpdates, indexHtmlTransformer) {
     return function angularIndexHtmlMiddleware(req, res, next) {
         if (!req.url) {
             next();
@@ -29,6 +29,8 @@ function createAngularIndexHtmlMiddleware(server, outputFiles, indexHtmlTransfor
             next();
             return;
         }
+        // A request for the index indicates a full page reload request.
+        resetComponentUpdates();
         server
             .transformIndexHtml(req.url, Buffer.from(rawHtml).toString('utf-8'))
             .then(async (processedHtml) => {

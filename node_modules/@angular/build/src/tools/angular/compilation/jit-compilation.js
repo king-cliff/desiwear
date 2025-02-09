@@ -17,6 +17,7 @@ const load_esm_1 = require("../../../utils/load-esm");
 const profiling_1 = require("../../esbuild/profiling");
 const angular_host_1 = require("../angular-host");
 const jit_resource_transformer_1 = require("../transformers/jit-resource-transformer");
+const lazy_routes_transformer_1 = require("../transformers/lazy-routes-transformer");
 const web_worker_transformer_1 = require("../transformers/web-worker-transformer");
 const angular_compilation_1 = require("./angular-compilation");
 class JitCompilationState {
@@ -34,7 +35,12 @@ class JitCompilationState {
     }
 }
 class JitCompilation extends angular_compilation_1.AngularCompilation {
+    browserOnlyBuild;
     #state;
+    constructor(browserOnlyBuild) {
+        super();
+        this.browserOnlyBuild = browserOnlyBuild;
+    }
     async initialize(tsconfig, hostOptions, compilerOptionsTransformer) {
         // Dynamically load the Angular compiler CLI package
         const { constructorParametersDownlevelTransform } = await (0, load_esm_1.loadEsmModule)('@angular/compiler-cli/private/tooling');
@@ -71,7 +77,8 @@ class JitCompilation extends angular_compilation_1.AngularCompilation {
     emitAffectedFiles() {
         (0, node_assert_1.default)(this.#state, 'Compilation must be initialized prior to emitting files.');
         const { compilerHost, typeScriptProgram, constructorParametersDownlevelTransform, replaceResourcesTransform, webWorkerTransform, } = this.#state;
-        const buildInfoFilename = typeScriptProgram.getCompilerOptions().tsBuildInfoFile ?? '.tsbuildinfo';
+        const compilerOptions = typeScriptProgram.getCompilerOptions();
+        const buildInfoFilename = compilerOptions.tsBuildInfoFile ?? '.tsbuildinfo';
         const emittedFiles = [];
         const writeFileCallback = (filename, contents, _a, _b, sourceFiles) => {
             if (!sourceFiles?.length && filename.endsWith(buildInfoFilename)) {
@@ -89,6 +96,9 @@ class JitCompilation extends angular_compilation_1.AngularCompilation {
                 webWorkerTransform,
             ],
         };
+        if (!this.browserOnlyBuild) {
+            transformers.before.push((0, lazy_routes_transformer_1.lazyRoutesTransformer)(compilerOptions, compilerHost));
+        }
         // TypeScript will loop until there are no more affected files in the program
         while (typeScriptProgram.emitNextAffectedFile(writeFileCallback, undefined, undefined, transformers)) {
             /* empty */

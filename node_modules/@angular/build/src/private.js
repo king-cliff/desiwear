@@ -29,6 +29,7 @@ exports.createCompilerPlugin = createCompilerPlugin;
  * All exports are not supported for external use, do not provide SemVer guarantees, and
  * their existence may change in any future version.
  */
+const compilation_1 = require("./tools/angular/compilation");
 const compiler_plugin_1 = require("./tools/esbuild/angular/compiler-plugin");
 const component_stylesheets_1 = require("./tools/esbuild/angular/component-stylesheets");
 // Builders
@@ -53,7 +54,9 @@ Object.defineProperty(exports, "createJitResourceTransformer", { enumerable: tru
 var javascript_transformer_1 = require("./tools/esbuild/javascript-transformer");
 Object.defineProperty(exports, "JavaScriptTransformer", { enumerable: true, get: function () { return javascript_transformer_1.JavaScriptTransformer; } });
 function createCompilerPlugin(pluginOptions, styleOptions) {
-    return (0, compiler_plugin_1.createCompilerPlugin)(pluginOptions, new component_stylesheets_1.ComponentStylesheetBundler(styleOptions, styleOptions.inlineStyleLanguage, pluginOptions.incremental));
+    return (0, compiler_plugin_1.createCompilerPlugin)(pluginOptions, pluginOptions.noopTypeScriptCompilation
+        ? new compilation_1.NoopCompilation()
+        : () => (0, compilation_1.createAngularCompilation)(!!pluginOptions.jit, !!pluginOptions.browserOnlyBuild), new component_stylesheets_1.ComponentStylesheetBundler(styleOptions, styleOptions.inlineStyleLanguage, pluginOptions.incremental));
 }
 // Utilities
 __exportStar(require("./utils/bundle-calculator"), exports);

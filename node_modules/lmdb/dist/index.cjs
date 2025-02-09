@@ -1435,7 +1435,7 @@ class RangeIterable {
 			else return result ? element : SKIP;
 		});
 		let iterate = iterable.iterate;
-		iterable.iterate = (options) => {
+		iterable.iterate = (options = NO_OPTIONS) => {
 			// explicitly prevent continue on recoverable error with filter
 			if (options.continueOnRecoverableError)
 				options = { ...options, continueOnRecoverableError: false };

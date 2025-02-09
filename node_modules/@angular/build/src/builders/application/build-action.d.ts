@@ -25,4 +25,5 @@ export declare function runEsBuildBuildAction(action: (rebuildState?: RebuildSta
     clearScreen?: boolean;
     colors?: boolean;
     jsonLogs?: boolean;
+    incrementalResults?: boolean;
 }): AsyncIterable<Result>;

@@ -5,12 +5,6 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.dev/license
  */
-/**
- * @fileoverview
- * Private exports intended only for use with the @angular-devkit/build-angular package.
- * All exports are not supported for external use, do not provide SemVer guarantees, and
- * their existence may change in any future version.
- */
 import { CompilerPluginOptions } from './tools/esbuild/angular/compiler-plugin';
 import { BundleStylesheetOptions } from './tools/esbuild/stylesheets/bundle-options';
 export { buildApplicationInternal } from './builders/application';
@@ -25,7 +19,10 @@ export { SassWorkerImplementation } from './tools/sass/sass-service';
 export { SourceFileCache } from './tools/esbuild/angular/source-file-cache';
 export { createJitResourceTransformer } from './tools/angular/transformers/jit-resource-transformer';
 export { JavaScriptTransformer } from './tools/esbuild/javascript-transformer';
-export declare function createCompilerPlugin(pluginOptions: CompilerPluginOptions, styleOptions: BundleStylesheetOptions & {
+export declare function createCompilerPlugin(pluginOptions: CompilerPluginOptions & {
+    browserOnlyBuild?: boolean;
+    noopTypeScriptCompilation?: boolean;
+}, styleOptions: BundleStylesheetOptions & {
     inlineStyleLanguage: string;
 }): import('esbuild').Plugin;
 export * from './utils/bundle-calculator';

@@ -23,12 +23,12 @@ const utils_1 = require("../../tools/esbuild/utils");
  * @param codeBundleCache An instance of the TypeScript source file cache.
  * @returns An array of BundlerContext objects.
  */
-function setupBundlerContexts(options, target, codeBundleCache, stylesheetBundler, templateUpdates) {
+function setupBundlerContexts(options, target, codeBundleCache, stylesheetBundler, angularCompilation, templateUpdates) {
     const { outputMode, serverEntryPoint, appShellOptions, prerenderOptions, ssrOptions, workspaceRoot, watch = false, } = options;
     const typescriptContexts = [];
     const otherContexts = [];
     // Browser application code
-    typescriptContexts.push(new bundler_context_1.BundlerContext(workspaceRoot, watch, (0, application_code_bundle_1.createBrowserCodeBundleOptions)(options, target, codeBundleCache, stylesheetBundler, templateUpdates)));
+    typescriptContexts.push(new bundler_context_1.BundlerContext(workspaceRoot, watch, (0, application_code_bundle_1.createBrowserCodeBundleOptions)(options, target, codeBundleCache, stylesheetBundler, angularCompilation, templateUpdates)));
     // Browser polyfills code
     const browserPolyfillBundleOptions = (0, application_code_bundle_1.createBrowserPolyfillBundleOptions)(options, target, codeBundleCache, stylesheetBundler);
     if (browserPolyfillBundleOptions) {

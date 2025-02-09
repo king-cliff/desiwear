@@ -7,6 +7,7 @@
  */
 import { Budget as BudgetEntry, Type as BudgetType } from '../builders/application/schema';
 export { type BudgetEntry, BudgetType };
+export declare const BYTES_IN_KILOBYTE = 1000;
 export interface Threshold {
     limit: number;
     type: ThresholdType;

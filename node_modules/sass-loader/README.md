@@ -147,6 +147,7 @@ Thankfully there are two solutions to this problem:
 - **[`additionalData`](#additionaldata)**
 - **[`webpackImporter`](#webpackimporter)**
 - **[`warnRuleAsWarning`](#warnruleaswarning)**
+- **[`api`](#api)**
 
 ### `implementation`
 
@@ -315,7 +316,6 @@ Please consult their respective documentation before using them:
 - [Dart Sass documentation](https://sass-lang.com/documentation/js-api/interfaces/Options) for all available `sass` options.
 - [Sass Embedded documentation](https://github.com/sass/embedded-host-node) for all available `sass` options.
 - [Node Sass documentation](https://github.com/sass/node-sass/#options) for all available `node-sass` options.
-- [Sass Embedded documentation](https://github.com/sass/embedded-host-node) for all available `sass` options.
 
 #### `object`
 

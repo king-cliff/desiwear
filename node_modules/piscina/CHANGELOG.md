@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.8.0](https://github.com/piscinajs/piscina/compare/v4.7.0...v4.8.0) (2024-12-04)
+
 ## [4.7.0](https://github.com/piscinajs/piscina/compare/v4.6.1...v4.7.0) (2024-09-18)
 
 

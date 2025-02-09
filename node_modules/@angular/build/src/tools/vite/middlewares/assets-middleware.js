@@ -22,15 +22,15 @@ function createAngularAssetsMiddleware(server, assets, outputFiles, componentSty
         const extension = (0, node_path_1.extname)(pathname);
         const pathnameHasTrailingSlash = pathname[pathname.length - 1] === '/';
         // Rewrite all build assets to a vite raw fs URL
-        const assetSourcePath = assets.get(pathname);
-        if (assetSourcePath !== undefined) {
+        const asset = assets.get(pathname);
+        if (asset) {
             // Workaround to disable Vite transformer middleware.
             // See: https://github.com/vitejs/vite/blob/746a1daab0395f98f0afbdee8f364cb6cf2f3b3f/packages/vite/src/node/server/middlewares/transform.ts#L201 and
             // https://github.com/vitejs/vite/blob/746a1daab0395f98f0afbdee8f364cb6cf2f3b3f/packages/vite/src/node/server/transformRequest.ts#L204-L206
             req.headers.accept = 'text/html';
             // The encoding needs to match what happens in the vite static middleware.
             // ref: https://github.com/vitejs/vite/blob/d4f13bd81468961c8c926438e815ab6b1c82735e/packages/vite/src/node/server/middlewares/static.ts#L163
-            req.url = `${server.config.base}@fs/${encodeURI(assetSourcePath)}`;
+            req.url = `${server.config.base}@fs/${encodeURI(asset.source)}`;
             next();
             return;
         }
@@ -43,7 +43,7 @@ function createAngularAssetsMiddleware(server, assets, outputFiles, componentSty
             : // Non-trailing slash check for fallback `.html`
                 assets.get(pathname + '.html');
         if (htmlAssetSourcePath) {
-            req.url = `${server.config.base}@fs/${encodeURI(htmlAssetSourcePath)}`;
+            req.url = `${server.config.base}@fs/${encodeURI(htmlAssetSourcePath.source)}`;
             next();
             return;
         }

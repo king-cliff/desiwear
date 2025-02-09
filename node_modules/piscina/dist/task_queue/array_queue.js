@@ -13,7 +13,8 @@ class ArrayTaskQueue {
         return this.tasks.length;
     }
     shift() {
-        return this.tasks.shift();
+        var _a;
+        return (_a = this.tasks.shift()) !== null && _a !== void 0 ? _a : null;
     }
     push(task) {
         this.tasks.push(task);

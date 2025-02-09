@@ -11,6 +11,8 @@ import { AngularHostOptions } from '../angular-host';
 import { AngularCompilation, DiagnosticModes, EmitFileResult } from './angular-compilation';
 export declare class JitCompilation extends AngularCompilation {
     #private;
+    private readonly browserOnlyBuild;
+    constructor(browserOnlyBuild: boolean);
     initialize(tsconfig: string, hostOptions: AngularHostOptions, compilerOptionsTransformer?: (compilerOptions: ng.CompilerOptions) => ng.CompilerOptions): Promise<{
         affectedFiles: ReadonlySet<ts.SourceFile>;
         compilerOptions: ng.CompilerOptions;

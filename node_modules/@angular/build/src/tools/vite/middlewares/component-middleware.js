@@ -8,13 +8,15 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createAngularComponentMiddleware = createAngularComponentMiddleware;
+const utils_1 = require("../utils");
 const ANGULAR_COMPONENT_PREFIX = '/@ng/component';
-function createAngularComponentMiddleware(templateUpdates) {
+function createAngularComponentMiddleware(server, templateUpdates) {
     return function angularComponentMiddleware(req, res, next) {
         if (req.url === undefined || res.writableEnded) {
             return;
         }
-        if (!req.url.startsWith(ANGULAR_COMPONENT_PREFIX)) {
+        const pathname = (0, utils_1.pathnameWithoutBasePath)(req.url, server.config.base);
+        if (!pathname.includes(ANGULAR_COMPONENT_PREFIX)) {
             next();
             return;
         }

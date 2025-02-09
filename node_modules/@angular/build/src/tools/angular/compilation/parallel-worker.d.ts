@@ -10,6 +10,7 @@ import { type MessagePort } from 'node:worker_threads';
 import type { DiagnosticModes } from './angular-compilation';
 export interface InitRequest {
     jit: boolean;
+    browserOnlyBuild: boolean;
     tsconfig: string;
     fileReplacements?: Record<string, string>;
     stylesheetPort: MessagePort;

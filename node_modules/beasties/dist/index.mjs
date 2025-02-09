@@ -13,36 +13,43 @@ function parseStylesheet(stylesheet) {
   return parse(stylesheet);
 }
 function serializeStylesheet(ast, options) {
-  let cssStr = "";
+  const cssParts = [];
   stringify(ast, (result, node, type) => {
     if (node?.type === "decl" && node.value.includes("</style>")) {
       return;
     }
     if (!options.compress) {
-      cssStr += result;
+      cssParts.push(result);
       return;
     }
     if (node?.type === "comment")
       return;
     if (node?.type === "decl") {
       const prefix = node.prop + node.raws.between;
-      cssStr += result.replace(prefix, prefix.trim());
+      cssParts.push(result.replace(prefix, prefix.trim()));
       return;
     }
     if (type === "start") {
       if (node?.type === "rule" && node.selectors) {
-        cssStr += `${node.selectors.join(",")}{`;
+        if (node.selectors.length === 1) {
+          cssParts.push(node.selectors[0] ?? "", "{");
+        } else {
+          cssParts.push(node.selectors.join(","), "{");
+        }
       } else {
-        cssStr += result.replace(/\s\{$/, "{");
+        cssParts.push(result.trim());
       }
       return;
     }
     if (type === "end" && result === "}" && node?.raws?.semicolon) {
-      cssStr = cssStr.slice(0, -1);
+      const lastItemIdx = cssParts.length - 2;
+      if (lastItemIdx >= 0 && cssParts[lastItemIdx]) {
+        cssParts[lastItemIdx] = cssParts[lastItemIdx].slice(0, -1);
+      }
     }
-    cssStr += result.trim();
+    cssParts.push(result.trim());
   });
-  return cssStr;
+  return cssParts.join("");
 }
 function markOnly(predicate) {
   return (rule) => {
@@ -225,7 +232,7 @@ function extendElement(element) {
         return this.getAttribute("id");
       },
       set(value) {
-        this.setAttribue("id", value);
+        this.setAttribute("id", value);
       }
     },
     className: {
@@ -385,20 +392,39 @@ function extendDocument(document) {
     }
   });
 }
+const selectorTokensCache = /* @__PURE__ */ new Map();
 function cachedQuerySelector(sel, node) {
-  const selectorTokens = parse$1(sel);
-  for (const tokens of selectorTokens) {
-    if (tokens.length === 1) {
-      const token = tokens[0];
-      if (token.type === "attribute" && token.name === "class") {
+  let selectorTokens = selectorTokensCache.get(sel);
+  if (selectorTokens === void 0) {
+    selectorTokens = parseRelevantSelectors(sel);
+    selectorTokensCache.set(sel, selectorTokens);
+  }
+  if (selectorTokens) {
+    for (const token of selectorTokens) {
+      if (token.name === "class") {
         return classCache.has(token.value);
       }
-      if (token.type === "attribute" && token.name === "id") {
+      if (token.name === "id") {
         return idCache.has(token.value);
       }
     }
   }
   return !!selectOne(sel, node);
+}
+function parseRelevantSelectors(sel) {
+  const tokens = parse$1(sel);
+  const relevantTokens = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const tokenGroup = tokens[i];
+    if (tokenGroup?.length !== 1) {
+      continue;
+    }
+    const token = tokenGroup[0];
+    if (token?.type === "attribute" && (token.name === "class" || token.name === "id")) {
+      relevantTokens.push(token);
+    }
+  }
+  return relevantTokens.length > 0 ? relevantTokens : null;
 }
 
 const LOG_LEVELS = ["trace", "debug", "info", "warn", "error", "silent"];
@@ -442,8 +468,25 @@ var __publicField = (obj, key, value) => {
   __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
   return value;
 };
+var __accessCheck = (obj, member, msg) => {
+  if (!member.has(obj))
+    throw TypeError("Cannot " + msg);
+};
+var __privateGet = (obj, member, getter) => {
+  __accessCheck(obj, member, "read from private field");
+  return getter ? getter.call(obj) : member.get(obj);
+};
+var __privateAdd = (obj, member, value) => {
+  if (member.has(obj))
+    throw TypeError("Cannot add the same private member more than once");
+  member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+};
+var _selectorCache;
+const removePseudoClassesAndElementsPattern = /(?<!\\)::?[a-z-]+(?:\(.+\))?/gi;
+const removeTrailingCommasPattern = /\(\s*,|,\s*\)/g;
 class Beasties {
   constructor(options = {}) {
+    __privateAdd(this, _selectorCache, /* @__PURE__ */ new Map());
     __publicField(this, "options");
     __publicField(this, "logger");
     __publicField(this, "fs");
@@ -484,22 +527,20 @@ class Beasties {
     const start = Date.now();
     const document = createDocument(html);
     if (this.options.additionalStylesheets.length > 0) {
-      this.embedAdditionalStylesheet(document);
+      await this.embedAdditionalStylesheet(document);
     }
     if (this.options.external !== false) {
-      const externalSheets = [].slice.call(
-        document.querySelectorAll('link[rel="stylesheet"]')
-      );
+      const externalSheets = [...document.querySelectorAll('link[rel="stylesheet"]')];
       await Promise.all(
         externalSheets.map((link) => this.embedLinkedStylesheet(link, document))
       );
     }
     const styles = this.getAffectedStyleTags(document);
-    await Promise.all(
-      styles.map((style) => this.processStyle(style, document))
-    );
+    for (const style of styles) {
+      this.processStyle(style, document);
+    }
     if (this.options.mergeStylesheets !== false && styles.length !== 0) {
-      await this.mergeStylesheets(document);
+      this.mergeStylesheets(document);
     }
     const output = serializeDocument(document);
     const end = Date.now();
@@ -516,7 +557,7 @@ class Beasties {
     }
     return styles;
   }
-  async mergeStylesheets(document) {
+  mergeStylesheets(document) {
     const styles = this.getAffectedStyleTags(document);
     if (styles.length === 0) {
       this.logger.warn?.(
@@ -703,7 +744,7 @@ class Beasties {
   /**
    * Parse the stylesheet within a <style> element, then reduce it to contain only rules used by the document.
    */
-  async processStyle(style, document) {
+  processStyle(style, document) {
     if (style.$$reduce === false)
       return;
     const name = style.$$name ? style.$$name.replace(/^\//, "") : "inline CSS";
@@ -782,10 +823,10 @@ class Beasties {
             });
             if (isAllowedRule)
               return true;
-            if (sel === ":root" || sel === "html" || sel === "body" || /^::?(?:before|after)$/.test(sel)) {
+            if (sel === ":root" || sel === "html" || sel === "body" || sel[0] === ":" && /^::?(?:before|after)$/.test(sel)) {
               return true;
             }
-            sel = sel.replace(/(?<!\\)::?[a-z-]+(?![a-z-(])/gi, "").replace(/::?not\(\s*\)/g, "").replace(/\(\s*,/g, "(").replace(/,\s*\)/g, ")").trim();
+            sel = this.normalizeCssSelector(sel);
             if (!sel)
               return false;
             try {
@@ -818,8 +859,8 @@ class Beasties {
         }
         if (rule.type === "atrule" && rule.name === "font-face")
           return;
-        const rules = "nodes" in rule ? rule.nodes?.filter((rule2) => !rule2.$$remove) : void 0;
-        return !rules || rules.length !== 0;
+        const hasRemainingRules = ("nodes" in rule && rule.nodes?.some((rule2) => !rule2.$$remove)) ?? true;
+        return hasRemainingRules;
       })
     );
     if (failedSelectors.length !== 0) {
@@ -901,7 +942,17 @@ class Beasties {
       `\x1B[32mInlined ${formatSize(sheet.length)} (${percent}% of original ${formatSize(before.length)}) of ${name}${afterText}.\x1B[39m`
     );
   }
+  normalizeCssSelector(sel) {
+    let normalizedSelector = __privateGet(this, _selectorCache).get(sel);
+    if (normalizedSelector !== void 0) {
+      return normalizedSelector;
+    }
+    normalizedSelector = sel.replace(removePseudoClassesAndElementsPattern, "").replace(removeTrailingCommasPattern, (match) => match.includes("(") ? "(" : ")").trim();
+    __privateGet(this, _selectorCache).set(sel, normalizedSelector);
+    return normalizedSelector;
+  }
 }
+_selectorCache = new WeakMap();
 function formatSize(size) {
   if (size <= 0) {
     return "0 bytes";

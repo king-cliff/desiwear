@@ -39,12 +39,16 @@ class JavaScriptTransformer {
         this.#fileCacheKeyBase = Buffer.from(JSON.stringify(this.#commonOptions), 'utf-8');
     }
     #ensureWorkerPool() {
-        this.#workerPool ??= new worker_pool_1.WorkerPool({
+        const workerPoolOptions = {
             filename: require.resolve('./javascript-transformer-worker'),
             maxThreads: this.maxThreads,
-            // Prevent passing `--import` (loader-hooks) from parent to child worker.
-            execArgv: process.execArgv.filter((v) => v !== utils_1.IMPORT_EXEC_ARGV),
-        });
+        };
+        // Prevent passing SSR `--import` (loader-hooks) from parent to child worker.
+        const filteredExecArgv = process.execArgv.filter((v) => v !== utils_1.IMPORT_EXEC_ARGV);
+        if (process.execArgv.length !== filteredExecArgv.length) {
+            workerPoolOptions.execArgv = filteredExecArgv;
+        }
+        this.#workerPool ??= new worker_pool_1.WorkerPool(workerPoolOptions);
         return this.#workerPool;
     }
     /**

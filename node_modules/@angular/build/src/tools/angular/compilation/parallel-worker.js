@@ -23,7 +23,9 @@ const jit_compilation_1 = require("./jit-compilation");
 let compilation;
 const sourceFileCache = new source_file_cache_1.SourceFileCache();
 async function initialize(request) {
-    compilation ??= request.jit ? new jit_compilation_1.JitCompilation() : new aot_compilation_1.AotCompilation();
+    compilation ??= request.jit
+        ? new jit_compilation_1.JitCompilation(request.browserOnlyBuild)
+        : new aot_compilation_1.AotCompilation(request.browserOnlyBuild);
     const stylesheetRequests = new Map();
     request.stylesheetPort.on('message', ({ requestId, value, error }) => {
         if (error) {

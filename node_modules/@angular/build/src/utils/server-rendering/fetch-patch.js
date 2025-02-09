@@ -25,10 +25,10 @@ function patchFetchToLoadInMemoryAssets(baseURL) {
             url = input;
         }
         else if (typeof input === 'string') {
-            url = new URL(input);
+            url = new URL(input, baseURL);
         }
         else if (typeof input === 'object' && 'url' in input) {
-            url = new URL(input.url);
+            url = new URL(input.url, baseURL);
         }
         else {
             return originalFetch(input, init);

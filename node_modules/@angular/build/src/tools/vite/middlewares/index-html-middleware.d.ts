@@ -7,4 +7,4 @@
  */
 import type { Connect, ViteDevServer } from 'vite';
 import { AngularMemoryOutputFiles } from '../utils';
-export declare function createAngularIndexHtmlMiddleware(server: ViteDevServer, outputFiles: AngularMemoryOutputFiles, indexHtmlTransformer: ((content: string) => Promise<string>) | undefined): Connect.NextHandleFunction;
+export declare function createAngularIndexHtmlMiddleware(server: ViteDevServer, outputFiles: AngularMemoryOutputFiles, resetComponentUpdates: () => void, indexHtmlTransformer: ((content: string) => Promise<string>) | undefined): Connect.NextHandleFunction;

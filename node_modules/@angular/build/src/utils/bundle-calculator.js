@@ -7,13 +7,14 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ThresholdSeverity = exports.BudgetType = void 0;
+exports.ThresholdSeverity = exports.BYTES_IN_KILOBYTE = exports.BudgetType = void 0;
 exports.calculateThresholds = calculateThresholds;
 exports.checkBudgets = checkBudgets;
 exports.checkThresholds = checkThresholds;
 const schema_1 = require("../builders/application/schema");
 Object.defineProperty(exports, "BudgetType", { enumerable: true, get: function () { return schema_1.Type; } });
 const format_bytes_1 = require("./format-bytes");
+exports.BYTES_IN_KILOBYTE = 1000;
 var ThresholdType;
 (function (ThresholdType) {
     ThresholdType["Max"] = "maximum";
@@ -242,13 +243,13 @@ function calculateBytes(input, baseline, factor = 1) {
             value = (baselineBytes * value) / 100;
             break;
         case 'kb':
-            value *= 1024;
+            value *= exports.BYTES_IN_KILOBYTE;
             break;
         case 'mb':
-            value *= 1024 * 1024;
+            value *= exports.BYTES_IN_KILOBYTE * exports.BYTES_IN_KILOBYTE;
             break;
         case 'gb':
-            value *= 1024 * 1024 * 1024;
+            value *= exports.BYTES_IN_KILOBYTE * exports.BYTES_IN_KILOBYTE * exports.BYTES_IN_KILOBYTE;
             break;
     }
     if (baselineBytes === 0) {

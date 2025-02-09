@@ -22,13 +22,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.augmentAppWithServiceWorker = augmentAppWithServiceWorker;
 exports.augmentAppWithServiceWorkerEsbuild = augmentAppWithServiceWorkerEsbuild;
@@ -123,7 +133,7 @@ class ResultFilesystem {
         throw new Error('Serviceworker manifest generator should not attempted to write.');
     }
 }
-async function augmentAppWithServiceWorker(appRoot, workspaceRoot, outputPath, baseHref, ngswConfigPath, inputputFileSystem = node_fs_1.promises, outputFileSystem = node_fs_1.promises) {
+async function augmentAppWithServiceWorker(appRoot, workspaceRoot, outputPath, baseHref, ngswConfigPath, inputFileSystem = node_fs_1.promises, outputFileSystem = node_fs_1.promises) {
     // Determine the configuration file path
     const configPath = ngswConfigPath
         ? path.join(workspaceRoot, ngswConfigPath)
@@ -131,7 +141,7 @@ async function augmentAppWithServiceWorker(appRoot, workspaceRoot, outputPath, b
     // Read the configuration file
     let config;
     try {
-        const configurationData = await inputputFileSystem.readFile(configPath, 'utf-8');
+        const configurationData = await inputFileSystem.readFile(configPath, 'utf-8');
         config = JSON.parse(configurationData);
     }
     catch (error) {
@@ -148,11 +158,7 @@ async function augmentAppWithServiceWorker(appRoot, workspaceRoot, outputPath, b
     const result = await augmentAppWithServiceWorkerCore(config, new CliFilesystem(outputFileSystem, outputPath), baseHref);
     const copy = async (src, dest) => {
         const resolvedDest = path.join(outputPath, dest);
-        return inputputFileSystem === outputFileSystem
-            ? // Native FS (Builder).
-                inputputFileSystem.copyFile(src, resolvedDest, node_fs_1.constants.COPYFILE_FICLONE)
-            : // memfs (Webpack): Read the file from the input FS (disk) and write it to the output FS (memory).
-                outputFileSystem.writeFile(resolvedDest, await inputputFileSystem.readFile(src));
+        return outputFileSystem.writeFile(resolvedDest, await inputFileSystem.readFile(src));
     };
     await outputFileSystem.writeFile(path.join(outputPath, 'ngsw.json'), result.manifest);
     for (const { source, destination } of result.assetFiles) {
